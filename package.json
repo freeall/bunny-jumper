@@ -1,6 +1,6 @@
 {
   "name": "bunny-jumper",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Bunny jumper game - maybe some day...",
   "dependencies": {},
   "devDependencies": {
