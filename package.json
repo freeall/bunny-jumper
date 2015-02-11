@@ -1,16 +1,19 @@
 {
   "name": "bunny-jumper",
   "version": "0.0.0",
-  "description": "WIP",
+  "description": "Bunny jumper game - maybe some day...",
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "wzrd": "^1.2.1"
+  },
   "author": "Tobias Baunbæk <freeall@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "browserify index.js > public/index.js"
+    "build": "browserify index.js > public/bundle.js",
+    "start": "wzrd --path public index.js:bundle.js"
   },
   "repository": {
-  	"type": "git",
-  	"url": "https://github.com/freeall/bunny-jumper.git"
+    "type": "git",
+    "url": "https://github.com/freeall/bunny-jumper.git"
   }
 }
