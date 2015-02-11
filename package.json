@@ -6,6 +6,9 @@
   "devDependencies": {},
   "author": "Tobias Baunbæk <freeall@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "build": "browserify index.js > public/index.js"
+  },
   "repository": {
   	"type": "git",
   	"url": "https://github.com/freeall/bunny-jumper.git"
