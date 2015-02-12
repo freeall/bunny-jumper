@@ -9,6 +9,7 @@ var box = require('./box')(BLOCK_WIDTH, BLOCK_HEIGHT);
 
 var showGrid = false;
 var world = {
+	context: document.createElement('canvas').getContext('2d'),
 	width: BLOCK_WIDTH * MAP_WIDTH,
 	height: BLOCK_HEIGHT * MAP_HEIGHT,
 	players: [],
@@ -21,17 +22,29 @@ var update = function(dt) {
 	});
 };
 var draw = function(ctx) {
-	ctx.clearRect(0, 0, world.width, world.height);
-	ctx.drawImage(resources.get('background.gif'), 0, 0, world.width, world.height);
+	world.context.clearRect(0, 0, world.width, world.height);
+	world.context.drawImage(resources.get('background.gif'), 0, 0, world.width, world.height);
 
 	world.boxes.forEach(function(box) {
-		box.draw(ctx);
+		box.draw(world.context);
 	});
 	world.players.forEach(function(player) {
-		player.draw(ctx);
+		player.draw(world.context);
 	});
 
-	if (showGrid) grid(ctx);
+	if (showGrid) grid(world.context);
+
+	var sWidth = dWidth = ctx.canvas.width;
+	var sHeight = dHeight = ctx.canvas.height;
+	var sx = world.players[0].x - dWidth/2 + world.players[0].width/2;
+	var sy = world.players[0].y - dHeight/2 + world.players[0].height/5;
+	var dx = 0;
+	var dy = 0;
+	sx = Math.min(sx, world.context.canvas.width-dWidth);
+	sx = Math.max(sx, 0);
+	sy = Math.min(sy, world.context.canvas.height-dHeight);
+	sy = Math.max(sy, 0);
+	ctx.drawImage(world.context.canvas, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
 };
 
 var grid = function(ctx) {
@@ -76,14 +89,15 @@ var generateWorld = function() {
 	];
 };
 
-
 (function () {
 	var canvas = document.getElementById('canvas');
 	var ctx = canvas.getContext('2d');
 	var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame;
 
-	canvas.width = world.width;
-	canvas.height = world.height;
+	world.context.canvas.width = world.width;
+	world.context.canvas.height = world.height;
+	canvas.width = 700;//world.width;
+	canvas.height = 500;//world.height;
 
 	// // Generally prevent the arrows to cause a change in the display
 	// document.body.addEventListener('keydown', function(e) {
