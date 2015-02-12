@@ -5,7 +5,7 @@ var RIGHT_KEY = 39;
 var UP_KEY = 38;
 var SPACE_KEY = 32;
 var FRICTION = 0.7;
-var GRAVITY = 1;
+var GRAVITY = 1.5;
 var ACCELERATION = 2;
 
 module.exports = function(blockWidth, blockHeight) {
@@ -80,7 +80,7 @@ module.exports = function(blockWidth, blockHeight) {
 					that.grounded = true;
 					that.jumping = false;
 				} else if (collision === 'top') {
-					that.velY *= -GRAVITY;
+					that.velY *= -(GRAVITY*(1/90));
 				}
 			}
 			if (that.grounded) that.velY = 0;
