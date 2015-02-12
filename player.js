@@ -6,7 +6,7 @@ var UP_KEY = 38;
 var SPACE_KEY = 32;
 var FRICTION = 0.7;
 var GRAVITY = 1.5;
-var ACCELERATION = 2;
+var ACCELERATION = 3;
 
 module.exports = function(blockWidth, blockHeight) {
 	return function(x, y, color) {
