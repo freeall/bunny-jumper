@@ -2,7 +2,9 @@
   "name": "bunny-jumper",
   "version": "0.4.0",
   "description": "Bunny jumper game - maybe some day...",
-  "dependencies": {},
+  "dependencies": {
+    "peerjs": "^0.3.14"
+  },
   "devDependencies": {
     "wzrd": "^1.2.1"
   },

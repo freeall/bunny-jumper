@@ -1,11 +1,27 @@
 var BLOCK_WIDTH = 32;
 var BLOCK_HEIGHT = 32;
-var MAP_WIDTH = 30;
+var MAP_WIDTH = 50;
 var MAP_HEIGHT = 20;
 
 var resources = require('./resources');
 var player = require('./player')(BLOCK_WIDTH, BLOCK_HEIGHT);
-var box = require('./box')(BLOCK_WIDTH, BLOCK_HEIGHT);
+var block = require('./block')(BLOCK_WIDTH, BLOCK_HEIGHT);
+// var url = require('url');
+// var Peer = require('peerjs');
+
+// var serverId = url.parse(location.href, true)).query.id;
+// if (!serverId) {
+// 	alert('Use the url given')
+// 	throw new Error('No server to connect to;')
+// }
+
+// var peer = new Peer({key:'x87tkqzsswoh6w29'});
+// console.log(peer.id);
+// peer.on('open', function(id) {
+// 	console.log(id);
+// });
+// return;
+
 
 var showGrid = false;
 var world = {
@@ -13,23 +29,23 @@ var world = {
 	width: BLOCK_WIDTH * MAP_WIDTH,
 	height: BLOCK_HEIGHT * MAP_HEIGHT,
 	players: [],
-	boxes: []
+	blocks: []
 };
 
 var update = function(dt) {
 	world.players.forEach(function(player) {
-		player.update(world);
+		player.update(world, dt);
 	});
 };
-var draw = function(ctx) {
+var draw = function(ctx, dt) {
 	world.context.clearRect(0, 0, world.width, world.height);
 	world.context.drawImage(resources.get('background.gif'), 0, 0, world.width, world.height);
 
-	world.boxes.forEach(function(box) {
-		box.draw(world.context);
+	world.blocks.forEach(function(block) {
+		block.draw(world.context, dt);
 	});
 	world.players.forEach(function(player) {
-		player.draw(world.context);
+		player.draw(world.context, dt);
 	});
 
 	if (showGrid) grid(world.context);
@@ -72,20 +88,25 @@ var grid = function(ctx) {
 	ctx.stroke();
 };
 var loadResources = function(callback) {
-	resources.load(['background.gif', 'lazer-block.gif', 'spike.gif'], callback);
+	resources.load([
+		'background.gif', 'lazer-block.gif', 'spike.gif',
+		'stand-right.png', 'stand-left.png',
+		'run-right1.png', 'run-right2.png', 'run-left1.png', 'run-left2.png',
+		'jump-right.png', 'jump-left.png'
+	], callback);
 };
 var generateWorld = function() {
 	world.players = [
 		player(10, 10, 'red')
 	];
-	world.boxes = [
-		box(0, 0, MAP_WIDTH, 1, 'spike.gif'),
-		box(0, MAP_HEIGHT-1, MAP_WIDTH, 1, 'lazer-block.gif'),
-		box(10, 16, 2, 1, 'lazer-block.gif'),
-		box(13, 13, 2, 1, 'lazer-block.gif'),
-		box(16, 10, 2, 1, 'lazer-block.gif'),
-		box(19, 7, 2, 1, 'lazer-block.gif'),
-		box(13, 6, 2, 1, 'lazer-block.gif')
+	world.blocks = [
+		block(0, 0, MAP_WIDTH, 1, 'spike.gif'),
+		block(0, MAP_HEIGHT-1, MAP_WIDTH, 1, 'lazer-block.gif'),
+		block(10, 16, 2, 1, 'lazer-block.gif'),
+		block(13, 13, 2, 1, 'lazer-block.gif'),
+		block(16, 10, 2, 1, 'lazer-block.gif'),
+		block(19, 7, 2, 1, 'lazer-block.gif'),
+		block(13, 6, 2, 1, 'lazer-block.gif')
 	];
 };
 
@@ -96,8 +117,8 @@ var generateWorld = function() {
 
 	world.context.canvas.width = world.width;
 	world.context.canvas.height = world.height;
-	canvas.width = 700;//world.width;
-	canvas.height = 500;//world.height;
+	canvas.width = 700;
+	canvas.height = 500;
 
 	// // Generally prevent the arrows to cause a change in the display
 	// document.body.addEventListener('keydown', function(e) {
@@ -107,19 +128,20 @@ var generateWorld = function() {
 		if (e.keyCode === 103) showGrid = !showGrid;
 	});
 
-	var lastTime;
+	var lastTime = Date.now();
 	var mainLoop = function() {
 		var now = Date.now();
 		var dt = (now - lastTime) / 1000.0;
 
 		update(dt);
-		draw(ctx);
+		draw(ctx, dt);
 
 		lastTime = now;
 		requestAnimationFrame(mainLoop);
 	};
 
 	loadResources(function() {
+		world.background = world.context.createPattern(resources.get('background.gif'), 'repeat');
 		generateWorld();
 		mainLoop();
 	});

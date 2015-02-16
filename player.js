@@ -1,3 +1,4 @@
+var resources = require('./resources');
 var collisionCheck = require('./collision_check');
 
 var LEFT_KEY = 37;
@@ -8,6 +9,7 @@ var FRICTION = 0.7;
 var GRAVITY = 1.5;
 var ACCELERATION = 3;
 
+
 module.exports = function(blockWidth, blockHeight) {
 	return function(x, y, color) {
 		var keys = [];
@@ -16,13 +18,26 @@ module.exports = function(blockWidth, blockHeight) {
 			y: y * blockHeight,
 			color: color,
 			width: 1 * blockWidth,
-			height: 2 * blockHeight,
+			height: 1.5 * blockHeight,
 			speed: 10,
 			velX: 0,
 			velY: 0,
+			sprite: {
+				time: 0,
+				frame: 0
+			},
+			position: 'stand-left',
 			shouldJump: false,
 			jumping: false,
 			grounded: false
+		};
+		var frames = {
+			'stand-left': [resources.get('stand-left.png')],
+			'stand-right': [resources.get('stand-right.png')],
+			'run-right': [resources.get('run-right1.png'), resources.get('run-right2.png')],
+			'run-left': [resources.get('run-left1.png'), resources.get('run-left2.png')],
+			'jump-left': [resources.get('jump-left.png')],
+			'jump-right': [resources.get('jump-right.png')]
 		};
 
 		document.body.addEventListener('keydown', function(e) {
@@ -36,12 +51,19 @@ module.exports = function(blockWidth, blockHeight) {
 			keys[e.keyCode] = false;
 		});
 
-		that.draw = function(ctx) {
-			ctx.fillStyle = that.color;
-			ctx.fillRect(that.x, that.y, that.width, that.height);
+		that.draw = function(ctx, dt) {
+			var img = frames[that.position][that.sprite.frame];
+			ctx.drawImage(img, 0, 0, img.width, img.height, that.x, that.y, img.width, img.height-8);
 		};
-		that.update = function(world) {
+		var dt = 0;
+		that.update = function(world, _dt) {
+			dt += _dt;
+			if (dt < 0.01) return;
 			var boxes = world.boxes;
+			var oldX = Math.floor(that.x);
+			var oldY = Math.floor(that.y);
+			var oldJumping = that.jumping;
+			var oldPos = that.position;
 
 			if (that.shouldJump) {
 				that.shouldJump = false;
@@ -70,8 +92,8 @@ module.exports = function(blockWidth, blockHeight) {
 			}
 
 			that.grounded = false;
-			for (var i=0; i<world.boxes.length; i++){
-				var collision = collisionCheck(that, world.boxes[i]);
+			world.blocks.forEach(function(block) {
+				var collision = collisionCheck(that, block);
 				
 				if (collision === 'left' || collision === 'right') {
 					that.velX = 0;
@@ -82,8 +104,38 @@ module.exports = function(blockWidth, blockHeight) {
 				} else if (collision === 'top') {
 					that.velY *= -(GRAVITY*(1/90));
 				}
-			}
+			});
 			if (that.grounded) that.velY = 0;
+
+			var newX = Math.floor(that.x);
+			var newY = Math.floor(that.y);
+			var newJumping = that.jumping;
+
+			if (newX > oldX) that.position = 'run-right';
+			if (newX < oldX) that.position = 'run-left';
+			if (newX === oldX && that.position === 'run-left') that.position = 'stand-left';
+			if (newX === oldX && that.position === 'run-right') that.position = 'stand-right';
+
+			if (that.position in {'run-left':1, 'stand-left':1} && that.jumping) that.position = 'jump-left';
+			if (that.position in {'run-right':1, 'stand-right':1} && that.jumping) that.position = 'jump-right';
+
+			if (oldJumping && !newJumping && oldPos === 'jump-left') that.position = 'stand-left';
+			if (oldJumping && !newJumping && oldPos === 'jump-right') that.position = 'stand-right';
+
+			var newPos = that.position;
+			if (oldPos !== newPos) {
+				that.sprite.time = 0;
+				that.sprite.frame = 0;
+			}
+			if (oldPos === newPos) {
+				that.sprite.time += dt;
+				if (that.sprite.time > 0.03) {
+					that.sprite.time = 0;
+					that.sprite.frame = that.sprite.frame === frames[that.position].length-1 ? 0 : that.sprite.frame+1;
+				}
+			}
+
+			dt = 0;
 		};
 
 		return that;
